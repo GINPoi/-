@@ -454,15 +454,21 @@ function generateQR() {
     // 清空舊容器
     qrcodeContainer.innerHTML = '';
     
-    // 產出簡短的資料承載陣列 [name, attendance[], points]
+    // 產出極短的資料承載陣列 [name, attendance[], points]
     const payload = JSON.stringify({
-        cls: classNameInput.value,
-        data: students.map(s => [s.name, s.attendance, s.points])
+        c: classNameInput.value,
+        d: students.map(s => [s.name, s.attendance, s.points])
     });
+
+    // 進行 LZ-String 壓縮大幅縮減 QR 體積
+    let finalPayload = payload;
+    if (typeof LZString !== 'undefined') {
+        finalPayload = LZString.compressToEncodedURIComponent(payload);
+    }
 
     try {
         new QRCode(qrcodeContainer, {
-            text: payload,
+            text: finalPayload,
             width: 280,
             height: 280,
             colorDark : "#0f172a",
@@ -470,7 +476,7 @@ function generateQR() {
             correctLevel : QRCode.CorrectLevel.L
         });
     } catch (e) {
-        showToast('資料量溢出，QR 產生失敗。請聯繫開發者進行分頁處理', 'error');
+        showToast('資料量溢出，QR 產生失敗。請考慮重新建置新班級', 'error');
     }
 }
 
@@ -504,43 +510,52 @@ function onScanSuccess(decodedText) {
     stopScannerAndClose(); 
     
     try {
-        const payload = JSON.parse(decodedText);
-        if (!payload.data || !Array.isArray(payload.data)) throw new Error("Format Invalid");
+        // 第一回合：嘗試 LZ-String 解壓
+        let rawJson = decodedText;
+        if (typeof LZString !== 'undefined') {
+            const decomp = LZString.decompressFromEncodedURIComponent(decodedText);
+            if (decomp) rawJson = decomp;
+        }
+
+        const payload = JSON.parse(rawJson);
+        const loopData = payload.d || payload.data;
+        if (!loopData || !Array.isArray(loopData)) throw new Error("Format Invalid");
         
         let mergedCount = 0;
         let addedCount = 0;
 
-        payload.data.forEach(item => {
+        loopData.forEach(item => {
             const [pName, pAtt, pPts] = item;
             let existingStudent = students.find(s => s.name === pName);
             
             if (existingStudent) {
                 // 出席日期交集並合併
-                const mergedAtt = new Set([...existingStudent.attendance, ...pAtt]);
+                const mergedAtt = new Set([...existingStudent.attendance, ...(pAtt || [])]);
                 existingStudent.attendance = Array.from(mergedAtt);
                 
                 // 點數以雙方中較高的為準（避免覆蓋）
-                existingStudent.points = Math.max(existingStudent.points, pPts);
+                existingStudent.points = Math.max(existingStudent.points || 0, pPts || 0);
                 mergedCount++;
             } else {
                 students.push({
                     name: pName,
-                    attendance: pAtt,
-                    points: pPts
+                    attendance: pAtt || [],
+                    points: pPts || 0
                 });
                 addedCount++;
             }
         });
 
         // 協助同步班級名稱
-        if (payload.cls && !classNameInput.value) {
-            classNameInput.value = payload.cls;
-            localStorage.setItem(CLASS_NAME_KEY, payload.cls);
+        const incomingClass = payload.c || payload.cls;
+        if (incomingClass && !classNameInput.value) {
+            classNameInput.value = incomingClass;
+            localStorage.setItem(CLASS_NAME_KEY, incomingClass);
         }
 
         saveData();
         renderStudents();
-        showToast(`掃描成功！覆蓋 ${mergedCount} 筆，新增 ${addedCount} 筆學生紀錄`, 'success');
+        showToast(`掃描成功！合併 ${mergedCount} 筆，新增 ${addedCount} 筆學生紀錄`, 'success');
         
     } catch (error) {
         showToast('無法解析此條碼，可能來源非點名系統', 'error');
