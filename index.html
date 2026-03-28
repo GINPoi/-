@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA Settings -->
+    <title>東港教會主日學點名簿</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-panel main-header">
+            <div class="header-content">
+                <div class="title-group">
+                    <h1>東港長老教會主日學出席系統</h1>
+                    <input type="text" id="class-name-input" class="class-name-input" placeholder="👉 點此輸入您的班級名稱..." autocomplete="off">
+                </div>
+                <div class="header-actions">
+                    <button id="qr-sync-btn" class="btn btn-primary" style="background: #8b5cf6;">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>離線同步</span>
+                    </button>
+                    <button id="leaderboard-btn" class="btn btn-secondary">
+                        <i class="fa-solid fa-ranking-star"></i>
+                        <span>總點數查詢</span>
+                    </button>
+                    <button id="add-student-btn" class="btn btn-primary">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>新增學生</span>
+                    </button>
+                    <button id="reset-data-btn" class="btn btn-danger-outline">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>年度重置</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Control Panel -->
+        <section class="glass-panel attendance-control">
+            <div class="control-group">
+                <label for="class-date"><i class="fa-regular fa-calendar-days"></i> 上課日期：</label>
+                <input type="date" id="class-date" class="date-input">
+            </div>
+            
+            <div class="control-group">
+                <label for="search-student"><i class="fa-solid fa-magnifying-glass"></i> 搜尋學生：</label>
+                <input type="text" id="search-student" class="date-input" placeholder="輸入姓名過濾...">
+            </div>
+        </section>
+
+        <!-- Students List -->
+        <main class="students-container" id="students-list">
+            <!-- Student Cards will be injected here by JS -->
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Modal: Overlay -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+
+    <!-- Modal: QR Sync Menu -->
+    <div class="modal glass-panel" id="qr-sync-modal">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-qrcode"></i> 離線資料同步</h2>
+            <button class="close-btn" data-close="qr-sync-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" style="text-align: center; display: flex; flex-direction: column; gap: 15px;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">無需網路，請選擇您現在要扮演的角色：</p>
+            <button id="generate-qr-btn" class="btn btn-primary" style="padding: 15px; font-size: 1.1rem;">
+                <i class="fa-solid fa-share-nodes"></i> 我是主導老師：產生資料 QR Code
+            </button>
+            <button id="scan-qr-btn" class="btn btn-success" style="padding: 15px; font-size: 1.1rem;">
+                <i class="fa-solid fa-camera"></i> 我是副班導：掃描並接收資料
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: QR Display (產生) -->
+    <div class="modal glass-panel" id="qr-display-modal">
+        <div class="modal-header">
+            <h2>請副班導掃描此條碼</h2>
+            <button class="close-btn" data-close="qr-display-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" style="display: flex; justify-content: center; padding: 30px;">
+            <div id="qrcode-container" style="background: white; padding: 15px; border-radius: 8px;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-close="qr-display-modal">關閉</button>
+        </div>
+    </div>
+
+    <!-- Modal: QR Scan (掃描) -->
+    <div class="modal glass-panel" id="qr-scan-modal" style="width: 100%; max-width: 500px;">
+        <div class="modal-header">
+            <h2>鏡頭對準主導老師的手機</h2>
+            <button class="close-btn" id="close-scan-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="qr-reader" style="width: 100%;"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Student -->
+    <div class="modal glass-panel" id="add-student-modal">
+        ... (omitted for brevity, actually I should include the whole modal)
+        <div class="modal-header">
+            <h2>新增學生</h2>
+            <button class="close-btn" data-close="add-student-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="new-student-name">學生姓名</label>
+                <input type="text" id="new-student-name" placeholder="請輸入全名..." autocomplete="off">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-close="add-student-modal">取消</button>
+            <button class="btn btn-primary" id="confirm-add-student">確認新增</button>
+        </div>
+    </div>
+
+    <!-- Modal: Reset Data -->
+    <div class="modal glass-panel" id="reset-modal">
+        <div class="modal-header">
+            <h2 class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> 警告：年度重置</h2>
+            <button class="close-btn" data-close="reset-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p>即將清空所有學生的<strong>「出席紀錄」</strong>與<strong>「點數」</strong>。</p>
+            <p>（註：學生名單將會保留）</p>
+            <p class="text-danger mt-2">此動作無法復原，您確定要繼續嗎？</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-close="reset-modal">取消</button>
+            <button class="btn btn-danger" id="confirm-reset-data">確認清除</button>
+        </div>
+    </div>
+
+    <!-- Modal: Leaderboard -->
+    <div class="modal glass-panel" id="leaderboard-modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-ranking-star"></i> 總計點數查詢</h2>
+            <button class="close-btn" data-close="leaderboard-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>姓名</th>
+                        <th>出席</th>
+                        <th>點數</th>
+                        <th>總計</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-table-body">
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" data-close="leaderboard-modal">關閉視窗</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker 註冊成功'))
+                    .catch(err => console.log('Service Worker 註冊失敗', err));
+            });
+        }
+    </script>
+
+    <!-- Libs for QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="script.js"></script>
+</body>
+</html>

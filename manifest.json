@@ -1,0 +1,21 @@
+{
+  "name": "東港教會主日學點名簿",
+  "short_name": "主日學點名簿",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#6366f1",
+  "description": "提供免網路環境下的在地出席點名與離線條碼互傳功能。",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
