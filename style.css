@@ -241,13 +241,37 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+}
+
+.student-name-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    overflow: hidden;
 }
 
 .student-name {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+.btn-icon-sm {
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    transition: var(--transition);
+}
+.btn-icon-sm:hover { color: var(--primary); transform: scale(1.1); }
+.btn-icon-sm.delete-student:hover { color: var(--danger); }
 
 /* Custom Checkbox Container */
 .checkbox-wrapper {
@@ -523,10 +547,35 @@ h1 {
 .rank-2 { color: #94a3b8; font-weight: 700; } /* Silver */
 .rank-3 { color: #b45309; font-weight: 700; } /* Bronze */
 
+/* 桌面版預設按鈕顯示狀態 */
+.btn span.desktop-text { display: inline-block; }
+.btn span.mobile-text { display: none; }
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
+    /* 防止出現水平捲動條 */
+    body { overflow-x: hidden; }
+
+    /* 按鈕字數斷行規則 */
+    .btn span.desktop-text { display: none; }
+    .btn span.mobile-text { display: inline-block; line-height: 1.2; }
+
+    /* 防呆：強制對話框與輸入框不可超過螢幕 */
+    .modal {
+        width: calc(100vw - 30px);
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    #qr-scan-modal { max-width: 100%; width: calc(100vw - 30px); }
+
+    .control-group { width: 100%; flex-wrap: wrap; }
+    .date-input { width: 100%; box-sizing: border-box; }
+    .class-name-input { max-width: 100%; box-sizing: border-box; }
+
     .attendance-control { flex-direction: column; align-items: stretch; }
     .header-content { flex-direction: column; align-items: flex-start; }
-    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-    .header-actions .btn { flex: 1; }
+    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+    
+    /* 讓按鈕在小螢幕時自動延展填滿空間 */
+    .header-actions .btn { flex: 1; min-width: 45%; padding: 12px 8px; font-size: 0.95rem; }
 }

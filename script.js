@@ -30,6 +30,17 @@ let html5QrcodeScanner = null;
 const newStudentNameInput = document.getElementById('new-student-name');
 const confirmAddStudentBtn = document.getElementById('confirm-add-student');
 const confirmResetDataBtn = document.getElementById('confirm-reset-data');
+
+const editStudentModal = document.getElementById('edit-student-modal');
+const editStudentNameInput = document.getElementById('edit-student-name');
+const editStudentIndexInput = document.getElementById('edit-student-index');
+const confirmEditStudentBtn = document.getElementById('confirm-edit-student');
+
+const deleteStudentModal = document.getElementById('delete-student-modal');
+const deleteStudentDisplayName = document.getElementById('delete-student-display-name');
+const deleteStudentIndexInput = document.getElementById('delete-student-index');
+const confirmDeleteStudentBtn = document.getElementById('confirm-delete-student');
+
 const closeBtns = document.querySelectorAll('[data-close]');
 const toastContainer = document.getElementById('toast-container');
 const leaderboardTableBody = document.getElementById('leaderboard-table-body');
@@ -93,7 +104,11 @@ function renderStudents() {
         card.className = 'student-card glass-panel';
         card.innerHTML = `
             <div class="student-header">
-                <div class="student-name">${escapeHTML(student.name)}</div>
+                <div class="student-name-group">
+                    <div class="student-name" title="${escapeHTML(student.name)}">${escapeHTML(student.name)}</div>
+                    <button class="btn-icon-sm edit-student" data-index="${student.originalIndex}" title="修改姓名"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon-sm delete-student" data-index="${student.originalIndex}" title="刪除學生"><i class="fa-solid fa-trash"></i></button>
+                </div>
                 <label class="checkbox-wrapper" title="勾選以標記出席">
                     <input type="checkbox" class="attendance-check" data-index="${student.originalIndex}" ${isPresentToday ? 'checked' : ''} ${!currentDate ? 'disabled' : ''}>
                     <div class="checkbox-custom"></div>
@@ -141,6 +156,14 @@ function renderStudents() {
     });
     document.querySelectorAll('.decrease-pt').forEach(btn => {
         btn.addEventListener('click', (e) => updatePoints(e.currentTarget.dataset.index, -1));
+    });
+    
+    // 綁定編輯與刪除按鈕
+    document.querySelectorAll('.edit-student').forEach(btn => {
+        btn.addEventListener('click', (e) => openEditModal(e.currentTarget.dataset.index));
+    });
+    document.querySelectorAll('.delete-student').forEach(btn => {
+        btn.addEventListener('click', (e) => openDeleteModal(e.currentTarget.dataset.index));
     });
 }
 
@@ -227,6 +250,15 @@ function setupEventListeners() {
         if (e.key === 'Enter') handleAddStudent();
     });
 
+    // 編輯學生綁定
+    confirmEditStudentBtn.addEventListener('click', handleEditStudent);
+    editStudentNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleEditStudent();
+    });
+    
+    // 刪除學生綁定
+    confirmDeleteStudentBtn.addEventListener('click', handleDeleteStudent);
+
     // 開啟總分排行榜
     leaderboardBtn.addEventListener('click', openLeaderboard);
 
@@ -267,6 +299,51 @@ function handleAddStudent() {
     renderStudents();
     closeModal(addStudentModal);
     showToast(`成功新增學生：${name}`, 'success');
+}
+
+// ====== 新增：編輯與刪除學生 ======
+function openEditModal(index) {
+    const student = students[index];
+    editStudentNameInput.value = student.name;
+    editStudentIndexInput.value = index;
+    openModal(editStudentModal);
+    setTimeout(() => editStudentNameInput.focus(), 100);
+}
+
+function handleEditStudent() {
+    const newName = editStudentNameInput.value.trim();
+    const index = editStudentIndexInput.value;
+    
+    if (!newName) {
+        showToast('名字不可以是空白的', 'error');
+        return;
+    }
+    
+    students[index].name = newName;
+    saveData();
+    renderStudents();
+    closeModal(editStudentModal);
+    showToast('學生名稱修改成功！', 'success');
+}
+
+function openDeleteModal(index) {
+    const student = students[index];
+    deleteStudentDisplayName.textContent = student.name;
+    deleteStudentIndexInput.value = index;
+    openModal(deleteStudentModal);
+}
+
+function handleDeleteStudent() {
+    const index = deleteStudentIndexInput.value;
+    const deletedName = students[index].name;
+    
+    // 從陣列中徹底移除
+    students.splice(index, 1);
+    
+    saveData();
+    renderStudents();
+    closeModal(deleteStudentModal);
+    showToast(`已經將 ${deletedName} 永久刪除。`, 'success');
 }
 
 // 處理：生成總分查詢排行榜

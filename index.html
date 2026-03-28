@@ -29,19 +29,23 @@
                 <div class="header-actions">
                     <button id="qr-sync-btn" class="btn btn-primary" style="background: #8b5cf6;">
                         <i class="fa-solid fa-qrcode"></i>
-                        <span>離線同步</span>
+                        <span class="desktop-text">離線同步</span>
+                        <span class="mobile-text">離線<br>同步</span>
                     </button>
                     <button id="leaderboard-btn" class="btn btn-secondary">
                         <i class="fa-solid fa-ranking-star"></i>
-                        <span>總點數查詢</span>
+                        <span class="desktop-text">總點數查詢</span>
+                        <span class="mobile-text">總點數<br>查詢</span>
                     </button>
                     <button id="add-student-btn" class="btn btn-primary">
                         <i class="fa-solid fa-user-plus"></i>
-                        <span>新增學生</span>
+                        <span class="desktop-text">新增學生</span>
+                        <span class="mobile-text">新增<br>學生</span>
                     </button>
                     <button id="reset-data-btn" class="btn btn-danger-outline">
                         <i class="fa-solid fa-rotate-right"></i>
-                        <span>年度重置</span>
+                        <span class="desktop-text">年度重置</span>
+                        <span class="mobile-text">年度<br>重置</span>
                     </button>
                 </div>
             </div>
@@ -128,6 +132,42 @@
         <div class="modal-footer">
             <button class="btn btn-secondary" data-close="add-student-modal">取消</button>
             <button class="btn btn-primary" id="confirm-add-student">確認新增</button>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Student -->
+    <div class="modal glass-panel" id="edit-student-modal">
+        <div class="modal-header">
+            <h2>編輯學生姓名</h2>
+            <button class="close-btn" data-close="edit-student-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="edit-student-name">學生姓名</label>
+                <input type="text" id="edit-student-name" placeholder="請輸入全名..." autocomplete="off">
+                <input type="hidden" id="edit-student-index">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-close="edit-student-modal">取消</button>
+            <button class="btn btn-primary" id="confirm-edit-student">儲存修改</button>
+        </div>
+    </div>
+
+    <!-- Modal: Delete Student -->
+    <div class="modal glass-panel" id="delete-student-modal">
+        <div class="modal-header">
+            <h2 class="text-danger"><i class="fa-solid fa-user-xmark"></i> 刪除學生</h2>
+            <button class="close-btn" data-close="delete-student-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p>您即將永久刪除學生 <strong id="delete-student-display-name" style="font-size: 1.1rem; color: var(--text-main);"></strong></p>
+            <p class="text-danger mt-2">包含他累積至今的「所有點數與點名紀錄」也將一併被銷毀，<strong>此動作無法還原！</strong></p>
+            <input type="hidden" id="delete-student-index">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-close="delete-student-modal">不，保留資料</button>
+            <button class="btn btn-danger" id="confirm-delete-student">是的，永久刪除</button>
         </div>
     </div>
 
